@@ -5,6 +5,7 @@ import com.dulfinne.randomgame.userservice.entity.User;
 import com.dulfinne.randomgame.userservice.exception.EntityNotFoundException;
 import com.dulfinne.randomgame.userservice.mapper.UserMapper;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
+import com.dulfinne.randomgame.userservice.util.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,8 +15,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
-
-import static com.dulfinne.randomgame.userservice.util.LoggingUtils.getDifferencesStringForRecord;
 
 @Aspect
 @Component
@@ -43,7 +42,8 @@ public class LogDifferencesAspect {
           log.info(
               "Changes detected for user '{}': {}",
               newUserResponse.username(),
-              getDifferencesStringForRecord(userMapper.toResponse(oldUser), newUserResponse));
+              LoggingUtils.getDifferencesStringForRecord(
+                  userMapper.toResponse(oldUser), newUserResponse));
           return newUserResponse;
         });
   }
