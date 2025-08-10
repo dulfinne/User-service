@@ -1,3 +1,11 @@
 spring:
   application:
     name: user-service
+
+  data:
+    mongodb:
+      uri: ${MONGO_URL:mongodb://localhost:27017}/user_db
+      auto-index-creation: true
+
+server:
+  port: 8090
