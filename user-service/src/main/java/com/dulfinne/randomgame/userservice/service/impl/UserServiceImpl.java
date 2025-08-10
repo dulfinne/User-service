@@ -1,5 +1,6 @@
 package com.dulfinne.randomgame.userservice.service.impl;
 
+import com.dulfinne.randomgame.userservice.annotation.LogDifferences;
 import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
@@ -56,6 +57,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  @LogDifferences
   public Mono<UserResponse> updateUser(String username, UserRequest request) {
     return getUserIfExists(username)
         .doOnNext(user -> userMapper.updateUser(request, user))
@@ -71,6 +73,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  @LogDifferences
   public Mono<UserResponse> creditMoney(String username, MoneyRequest request) {
     return getUserIfExists(username)
         .doOnNext(
@@ -87,6 +90,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  @LogDifferences
   public Mono<UserResponse> debitMoney(String username, MoneyRequest request) {
     return getUserIfExists(username)
         .doOnNext(
