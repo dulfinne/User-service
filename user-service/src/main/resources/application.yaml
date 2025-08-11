@@ -4,8 +4,9 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGO_URL:mongodb://localhost:27017}/user_db
+      uri: ${MONGO_URL:mongodb://localhost:27017}
       auto-index-creation: true
+      database: user_db
 
 server:
   port: 8090
