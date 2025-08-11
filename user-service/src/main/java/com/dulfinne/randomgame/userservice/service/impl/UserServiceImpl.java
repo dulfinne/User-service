@@ -10,11 +10,11 @@ import com.dulfinne.randomgame.userservice.exception.ActionNotAllowedException;
 import com.dulfinne.randomgame.userservice.exception.EntityAlreadyExistsException;
 import com.dulfinne.randomgame.userservice.exception.EntityNotFoundException;
 import com.dulfinne.randomgame.userservice.mapper.UserMapper;
-import com.dulfinne.randomgame.userservice.repository.UserCustomRepository;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
 import com.dulfinne.randomgame.userservice.service.UserService;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -26,13 +26,12 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
-  private final UserCustomRepository userCustomRepository;
   private final UserMapper userMapper;
 
   @Override
   @Transactional(readOnly = true)
   public Flux<UserResponse> getUsers(Integer offset, Integer limit) {
-    return userCustomRepository.findUsersWithPagination(offset, limit).map(userMapper::toResponse);
+    return userRepository.findAllBy(PageRequest.of(offset, limit)).map(userMapper::toResponse);
   }
 
   @Override
