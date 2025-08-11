@@ -5,6 +5,7 @@ import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
 import com.dulfinne.randomgame.userservice.service.UserService;
+import com.dulfinne.randomgame.userservice.util.ApiPaths;
 import com.dulfinne.randomgame.userservice.util.HeaderConstants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("api/v1/users")
+@RequestMapping(ApiPaths.USER_BASE_URL)
 @RequiredArgsConstructor
 public class UserController {
 

@@ -4,23 +4,18 @@ import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
 import com.dulfinne.randomgame.userservice.entity.User;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
+import com.dulfinne.randomgame.userservice.util.ApiPaths;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
-import com.dulfinne.randomgame.userservice.util.HeaderConstants;
 import com.dulfinne.randomgame.userservice.util.UserTestData;
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import reactor.core.publisher.Flux;
-import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,37 +23,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UserServiceIT extends IntegrationTestBase {
 
   private final UserRepository userRepository;
-  @LocalServerPort private int port;
-
-  private final String BASE_URL = "api/v1/users";
 
   @BeforeEach
   void setUp() {
-    userRepository
-        .deleteAll()
-        .thenMany(
-            Flux.just(UserTestData.getFirstUser().build(), UserTestData.getSecondUser().build())
-                .flatMap(userRepository::save))
-        .blockLast();
-  }
-
-  private RequestSpecification withAuth(String username) {
-    return given()
-        .header(HeaderConstants.USERNAME_HEADER, username)
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .port(port);
+    userRepository.deleteAll().block();
   }
 
   @Nested
   class GetUser {
+
     @Test
     void givenExistingUserAuth_whenGetUser_thenReturnUserResponse() {
+      userRepository.save(UserTestData.getFirstUser().build()).block();
       UserResponse expected = UserTestData.getFirstUserResponse().build();
 
       UserResponse result =
           withAuth(UserTestData.FIRST_USERNAME)
               .when()
-              .get(BASE_URL + "/me")
+              .get(ApiPaths.USER_BASE_URL + "/me")
               .then()
               .statusCode(HttpStatus.OK.value())
               .extract()
@@ -74,7 +56,7 @@ public class UserServiceIT extends IntegrationTestBase {
 
       withAuth(UserTestData.NON_EXISTING_USERNAME)
           .when()
-          .get(BASE_URL + "/me")
+          .get(ApiPaths.USER_BASE_URL + "/me")
           .then()
           .statusCode(HttpStatus.NOT_FOUND.value())
           .body("message", containsString(errorMessage))
@@ -99,7 +81,7 @@ public class UserServiceIT extends IntegrationTestBase {
               .contentType(ContentType.JSON)
               .body(request)
               .when()
-              .post(BASE_URL)
+              .post(ApiPaths.USER_BASE_URL)
               .then()
               .statusCode(HttpStatus.CREATED.value())
               .extract()
@@ -109,10 +91,18 @@ public class UserServiceIT extends IntegrationTestBase {
           .usingRecursiveComparison()
           .ignoringFields(UserTestData.ID_FIELD)
           .isEqualTo(expected);
+
+      Mono<User> userMono = userRepository.findByUsername(UserTestData.NON_EXISTING_USERNAME);
+      StepVerifier.create(userMono)
+          .assertNext(
+              user -> assertThat(user.getUsername()).isEqualTo(UserTestData.NON_EXISTING_USERNAME))
+          .expectComplete()
+          .verify();
     }
 
     @Test
     void givenExistingUserRequest_whenCreateUser_thenReturnErrorResponse() {
+      userRepository.save(UserTestData.getFirstUser().build()).block();
       String errorMessage =
           String.format(ExceptionKeys.USER_EXISTS_USERNAME, UserTestData.FIRST_USERNAME);
       UserRequest request = UserTestData.getFirstUserRequest().build();
@@ -121,7 +111,7 @@ public class UserServiceIT extends IntegrationTestBase {
           .contentType(ContentType.JSON)
           .body(request)
           .when()
-          .post(BASE_URL)
+          .post(ApiPaths.USER_BASE_URL)
           .then()
           .statusCode(HttpStatus.CONFLICT.value())
           .body("message", containsString(errorMessage))
@@ -134,20 +124,20 @@ public class UserServiceIT extends IntegrationTestBase {
 
     @Test
     void givenExistingAuth_whenUpdateUser_thenReturnUserResponse() {
-      UserRequest request = UserTestData.getFirstUserRequest().build();
+      userRepository.save(UserTestData.getFirstUser().build()).block();
+      UserRequest request = UserTestData.getUpdateUserRequest().build();
       UserResponse expected =
           UserTestData.getFirstUserResponse()
-              .username(UserTestData.SECOND_USERNAME)
-              .id(UserTestData.SECOND_ID)
-              .balance(UserTestData.SECOND_BALANCE)
+              .name(UserTestData.SECOND_NAME)
+              .surname(UserTestData.SECOND_SURNAME)
               .build();
 
       UserResponse result =
-          withAuth(UserTestData.SECOND_USERNAME)
+          withAuth(UserTestData.FIRST_USERNAME)
               .contentType(ContentType.JSON)
               .body(request)
               .when()
-              .put(BASE_URL)
+              .put(ApiPaths.USER_BASE_URL)
               .then()
               .statusCode(HttpStatus.OK.value())
               .extract()
@@ -166,7 +156,7 @@ public class UserServiceIT extends IntegrationTestBase {
           .contentType(ContentType.JSON)
           .body(request)
           .when()
-          .put(BASE_URL)
+          .put(ApiPaths.USER_BASE_URL)
           .then()
           .statusCode(HttpStatus.NOT_FOUND.value())
           .body("message", containsString(errorMessage))
@@ -176,11 +166,13 @@ public class UserServiceIT extends IntegrationTestBase {
 
   @Nested
   class DeleteUser {
+
     @Test
     void givenExistingAuth_whenDeleteUser_thenReturnUserResponse() {
+      userRepository.save(UserTestData.getFirstUser().build()).block();
       withAuth(UserTestData.FIRST_USERNAME)
           .when()
-          .delete(BASE_URL)
+          .delete(ApiPaths.USER_BASE_URL)
           .then()
           .statusCode(HttpStatus.NO_CONTENT.value());
 
@@ -196,7 +188,7 @@ public class UserServiceIT extends IntegrationTestBase {
 
       withAuth(UserTestData.NON_EXISTING_USERNAME)
           .when()
-          .delete(BASE_URL)
+          .delete(ApiPaths.USER_BASE_URL)
           .then()
           .statusCode(HttpStatus.NOT_FOUND.value())
           .body("message", containsString(errorMessage))

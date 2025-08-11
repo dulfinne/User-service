@@ -24,11 +24,8 @@ public class UserTestData {
   public static final String FIRST_SURNAME = "Smith";
   public static final BigDecimal FIRST_BALANCE = new BigDecimal("100.50");
 
-  public static final String SECOND_ID = "id2";
-  public static final String SECOND_USERNAME = "bob456";
   public static final String SECOND_NAME = "Bob";
   public static final String SECOND_SURNAME = "Johnson";
-  public static final BigDecimal SECOND_BALANCE = new BigDecimal("250.00");
 
   public static User.UserBuilder getFirstUser() {
     return User.builder()
@@ -39,17 +36,12 @@ public class UserTestData {
         .balance(FIRST_BALANCE);
   }
 
-  public static User.UserBuilder getSecondUser() {
-    return User.builder()
-        .id(SECOND_ID)
-        .username(SECOND_USERNAME)
-        .name(SECOND_NAME)
-        .surname(SECOND_SURNAME)
-        .balance(SECOND_BALANCE);
-  }
-
   public static UserRequest.UserRequestBuilder getFirstUserRequest() {
     return UserRequest.builder().name(FIRST_NAME).surname(FIRST_SURNAME);
+  }
+
+  public static UserRequest.UserRequestBuilder getUpdateUserRequest() {
+    return UserRequest.builder().name(SECOND_NAME).surname(SECOND_SURNAME);
   }
 
   public static UserResponse.UserResponseBuilder getFirstUserResponse() {
