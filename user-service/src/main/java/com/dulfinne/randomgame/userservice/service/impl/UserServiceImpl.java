@@ -17,10 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +30,11 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional(readOnly = true)
-  public Flux<UserResponse> getUsers(Integer offset, Integer limit) {
-    return userRepository.findAllBy(PageRequest.of(offset, limit)).map(userMapper::toResponse);
+  public Mono<List<UserResponse>> getUsers(Integer offset, Integer limit) {
+    return userRepository
+        .findAllBy(PageRequest.of(offset, limit))
+        .map(userMapper::toResponse)
+        .collectList();
   }
 
   @Override

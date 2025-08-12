@@ -21,8 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(ApiPaths.USER_BASE_URL)
@@ -32,7 +33,7 @@ public class UserController {
   private final UserService userService;
 
   @GetMapping
-  public Flux<UserResponse> getUsers(
+  public Mono<List<UserResponse>> getUsers(
       @RequestParam(value = "offset", defaultValue = "0") Integer offset,
       @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
     return userService.getUsers(offset, limit);

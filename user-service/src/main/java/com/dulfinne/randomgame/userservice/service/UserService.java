@@ -4,11 +4,12 @@ import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface UserService {
-  Flux<UserResponse> getUsers(Integer offset, Integer limit);
+  Mono<List<UserResponse>> getUsers(Integer offset, Integer limit);
 
   Mono<UserResponse> getUser(String username);
 
