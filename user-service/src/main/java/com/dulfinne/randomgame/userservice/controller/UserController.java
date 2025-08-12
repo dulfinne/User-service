@@ -38,7 +38,7 @@ public class UserController {
     return userService.getUsers(offset, limit);
   }
 
-  @GetMapping("/me")
+  @GetMapping(ApiPaths.ME)
   public Mono<UserResponse> getUser(
       @RequestHeader(HeaderConstants.USERNAME_HEADER) String username) {
     return userService.getUser(username);
@@ -65,21 +65,21 @@ public class UserController {
     return userService.deleteUser(username);
   }
 
-  @PostMapping("/credit")
+  @PostMapping(ApiPaths.CREDIT)
   public Mono<UserResponse> creditMoney(
       @RequestHeader(HeaderConstants.USERNAME_HEADER) String username,
       @RequestBody @Valid MoneyRequest request) {
     return userService.creditMoney(username, request);
   }
 
-  @PostMapping("/debit")
+  @PostMapping(ApiPaths.DEBIT)
   public Mono<UserResponse> debitMoney(
       @RequestHeader(HeaderConstants.USERNAME_HEADER) String username,
       @RequestBody @Valid MoneyRequest request) {
     return userService.debitMoney(username, request);
   }
 
-  @GetMapping("{username}/balance")
+  @GetMapping(ApiPaths.BALANCE_BY_USERNAME)
   public Mono<MoneyResponse> getBalance(@PathVariable String username) {
     return userService.getBalance(username);
   }

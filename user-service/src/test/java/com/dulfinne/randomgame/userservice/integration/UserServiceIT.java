@@ -40,7 +40,7 @@ public class UserServiceIT extends IntegrationTestBase {
       UserResponse result =
           withAuth(UserTestData.FIRST_USERNAME)
               .when()
-              .get(ApiPaths.USER_BASE_URL + "/me")
+              .get(ApiPaths.USER_BASE_URL + ApiPaths.ME)
               .then()
               .statusCode(HttpStatus.OK.value())
               .extract()
@@ -56,7 +56,7 @@ public class UserServiceIT extends IntegrationTestBase {
 
       withAuth(UserTestData.NON_EXISTING_USERNAME)
           .when()
-          .get(ApiPaths.USER_BASE_URL + "/me")
+          .get(ApiPaths.USER_BASE_URL + ApiPaths.ME)
           .then()
           .statusCode(HttpStatus.NOT_FOUND.value())
           .body("message", containsString(errorMessage))
