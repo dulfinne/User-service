@@ -36,7 +36,7 @@ jobs:
         working-directory: ./user-service
 
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: user-service-jar
           path: ./user-service/build/libs/*.jar
