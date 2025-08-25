@@ -47,6 +47,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Debug JAR existence
+        run: |
+          echo "Checking if JAR exists..."
+          ls -l ./user-service/build/libs
+
       - name: Build Docker image
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/user-service
