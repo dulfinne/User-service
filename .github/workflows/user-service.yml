@@ -31,9 +31,15 @@ jobs:
         run: ./gradlew build
         working-directory: ./user-service
 
-      - name: Integration tests
+      - name: Run integration tests
         run: ./gradlew check
         working-directory: ./user-service
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: user-service-jar
+          path: ./user-service/build/libs/*.jar
 
   docker:
     runs-on: ubuntu-latest
