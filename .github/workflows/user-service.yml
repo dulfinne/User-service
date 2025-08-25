@@ -31,10 +31,6 @@ jobs:
         run: ./gradlew build
         working-directory: ./user-service
 
-      - name: Run integration tests
-        run: ./gradlew check
-        working-directory: ./user-service
-
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
@@ -59,20 +55,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Debug JAR existence
-        run: |
-          echo "Checking if JAR exists..."
-          ls -l ./user-service/build/libs
-
       - name: Build Docker image
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/user-service
-          TAG=develop-${GITHUB_SHA::7}
-          docker build -t $IMAGE:$TAG -t $IMAGE:latest ./user-service
+          TAG=${GITHUB_SHA::7}
+          docker build -t $IMAGE:$TAG ./user-service
 
       - name: Push Docker image
         run: |
           IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/user-service
-          TAG=develop-${GITHUB_SHA::7}
+          TAG=${GITHUB_SHA::7}
           docker push $IMAGE:$TAG
-          docker push $IMAGE:latest
