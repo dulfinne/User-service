@@ -4,6 +4,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
+val springCloudVersion by extra("2025.0.0")
+
 group = "com.dulfinne.randomgame"
 version = "0.0.1-SNAPSHOT"
 
@@ -30,6 +32,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
 
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
@@ -52,6 +55,12 @@ tasks.withType<JavaCompile> {
 
 tasks.named<JavaCompile>("compileTestJava") {
     options.annotationProcessorPath = configurations.testAnnotationProcessor.get()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+    }
 }
 
 tasks.withType<Test> {
