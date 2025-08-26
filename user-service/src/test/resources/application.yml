@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: user-service
+
+  data:
+    mongodb:
+      uri: ${MONGO_URL:mongodb://localhost:27017}
+      auto-index-creation: true
+      database: test_user_db
