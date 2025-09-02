@@ -30,9 +30,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-aop")
-
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
     implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.kafka:spring-kafka")
+
     compileOnly("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
     annotationProcessor("org.mapstruct:mapstruct-processor:$mapstructVersion")
@@ -46,6 +47,8 @@ dependencies {
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.testcontainers:mongodb")
     testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.testcontainers:kafka")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
