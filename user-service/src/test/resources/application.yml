@@ -16,8 +16,8 @@ spring:
     topics:
       game-payments: game-payments-topic
     error-handler:
-      min-interval: 0
-      max-interval: 0
-      multiplier: 1.0
-      max-attempts: 0
+      min-interval: 1000
+      max-interval: 10000
+      multiplier: 2.0
+      max-attempts: 3
     dlt-postfix: .DLT
