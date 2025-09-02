@@ -16,32 +16,32 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
-  private final UserService userService;
-  private final GamePaymentRepository gamePaymentRepository;
+    private final UserService userService;
+    private final GamePaymentRepository gamePaymentRepository;
 
-  @Override
-  @Transactional
-  public Mono<Void> processPayment(Payment payment) {
-    return checkGamePaymentUniqueness(payment.gameId())
-        .then(Mono.just(new MoneyRequest(payment.amount())))
-        .flatMap(
-            money ->
-                Boolean.TRUE.equals(payment.positiveFlag())
-                    ? userService.creditMoney(payment.username(), money)
-                    : userService.debitMoney(payment.username(), money))
-        .flatMap(ignored -> gamePaymentRepository.save(new GamePayment(payment.gameId())))
-        .then();
-  }
+    @Override
+    @Transactional
+    public Mono<Void> processPayment(Payment payment) {
+        return checkGamePaymentUniqueness(payment.gameId())
+                .then(Mono.just(new MoneyRequest(payment.amount())))
+                .flatMap(
+                        money ->
+                                Boolean.TRUE.equals(payment.positiveFlag())
+                                        ? userService.creditMoney(payment.username(), money)
+                                        : userService.debitMoney(payment.username(), money))
+                .flatMap(ignored -> gamePaymentRepository.save(new GamePayment(payment.gameId())))
+                .then();
+    }
 
-  private Mono<Void> checkGamePaymentUniqueness(String gameId) {
-    return gamePaymentRepository
-        .findById(gameId)
-        .flatMap(
-            payment ->
-                Mono.error(
-                    new EntityAlreadyExistsException(
-                        String.format(ExceptionKeys.GAME_PAYMENT_EXISTS_USERNAME, gameId))))
-        .switchIfEmpty(Mono.empty())
-        .then();
-  }
+    private Mono<Void> checkGamePaymentUniqueness(String gameId) {
+        return gamePaymentRepository
+                .findById(gameId)
+                .flatMap(
+                        payment ->
+                                Mono.error(
+                                        new EntityAlreadyExistsException(
+                                                String.format(ExceptionKeys.GAME_PAYMENT_EXISTS_USERNAME, gameId))))
+                .switchIfEmpty(Mono.empty())
+                .then();
+    }
 }

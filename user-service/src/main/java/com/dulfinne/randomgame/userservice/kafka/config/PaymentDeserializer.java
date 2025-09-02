@@ -3,7 +3,6 @@ package com.dulfinne.randomgame.userservice.kafka.config;
 import com.dulfinne.randomgame.userservice.exception.UnableParseMessageException;
 import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NoArgsConstructor;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -18,8 +17,7 @@ public class PaymentDeserializer implements Deserializer<Payment> {
 
   @Override
   public void configure(Map<String, ?> configs, boolean isKey) {
-    objectMapper =
-        new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    objectMapper = new ObjectMapper();
   }
 
   @Override
