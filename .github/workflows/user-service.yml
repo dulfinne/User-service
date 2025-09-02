@@ -27,15 +27,32 @@ jobs:
       - name: Make Gradle Wrapper executable
         run: chmod +x ./user-service/gradlew
 
-      - name: Build with Gradle Wrapper
-        run: ./gradlew build
+      - name: Build (without tests)
+        run: ./gradlew build -x test
         working-directory: ./user-service
+
+      - name: Run tests
+        id: tests
+        run: ./gradlew test
+        continue-on-error: true
+        working-directory: ./user-service
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: ${{ github.workspace }}/user-service/build/reports/tests/test/
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: user-service-jar
           path: ./user-service/build/libs/*.jar
+
+      - name: Fail if tests failed
+        if: steps.tests.outcome != 'success'
+        run: exit 1
 
   docker:
     runs-on: ubuntu-latest
