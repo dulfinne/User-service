@@ -1,4 +1,5 @@
 services:
+
   kafka:
     image: apache/kafka:3.9.1
     container_name: kafka
@@ -29,3 +30,55 @@ services:
       DYNAMIC_CONFIG_ENABLED: 'true'
     depends_on:
       - kafka
+
+  connect:
+    image: quay.io/debezium/connect:3.2
+    container_name: connect
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+    depends_on:
+      - kafka
+      - mongo1
+
+  mongo1:
+    image: mongo:7.0
+    container_name: mongo1
+    command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27027" ]
+    ports:
+      - "27027:27027"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [ "CMD-SHELL", "mongosh --port 27027 /scripts/mongo-init.js --quiet" ]
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 30
+    volumes:
+      - "mongo1_data:/data/db"
+      - "mongo1_config:/data/configdb"
+      - "./mongo-init/mongo-init.js:/scripts/mongo-init.js:ro"
+
+  init-connectors:
+    image: curlimages/curl
+    entrypoint: [ "sh", "-c", "sleep 20; curl -X POST -H 'Content-Type: application/json' --data @/connectors/outbox-connector.json http://connect:8083/connectors" ]
+    volumes:
+      - ./connectors:/connectors
+    depends_on:
+      - connect
+
+
+volumes:
+  mongo1_data:
+  mongo1_config:
