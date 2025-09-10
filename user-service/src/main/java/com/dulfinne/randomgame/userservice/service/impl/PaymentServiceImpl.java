@@ -20,7 +20,7 @@ public class PaymentServiceImpl implements PaymentService {
   private final GamePaymentRepository gamePaymentRepository;
 
   @Override
-  @Transactional(readOnly = true)
+  @Transactional
   public Mono<Void> processPayment(Payment payment) {
     return checkGamePaymentUniqueness(payment.gameId())
         .then(Mono.just(new MoneyRequest(payment.amount())))
