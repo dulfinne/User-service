@@ -1,4 +1,4 @@
-package com.dulfinne.randomgame.userservice.kafka.config;
+package com.dulfinne.randomgame.userservice.kafka.service;
 
 import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import com.dulfinne.randomgame.userservice.service.PaymentService;

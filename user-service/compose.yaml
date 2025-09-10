@@ -32,7 +32,7 @@ services:
       - kafka
 
   connect:
-    image: quay.io/debezium/connect:3.2
+    image: quay.io/debezium/connect:3.3
     container_name: connect
     ports:
       - "8083:8083"
@@ -47,6 +47,7 @@ services:
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_EXACTLY_ONCE_SOURCE_SUPPORT: "enabled"
     depends_on:
       - kafka
       - mongo1
