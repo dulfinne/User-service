@@ -1,11 +1,11 @@
 package com.dulfinne.randomgame.userservice.kafka.service;
 
+import com.dulfinne.randomgame.userservice.exception.KafkaProcessingException;
 import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import com.dulfinne.randomgame.userservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,13 @@ public class KafkaConsumerService {
       topics = "${spring.kafka.topics.game-payments}",
       groupId = "${spring.kafka.groups.game-payments}",
       containerFactory = "kafkaListenerContainerFactory")
-  public Mono<Void> listen(Payment request) {
-    return paymentService.processPayment(request);
+  public Void listen(Payment request) {
+    return paymentService
+        .processPayment(request)
+        .doOnError(
+            e -> {
+              throw new KafkaProcessingException(e.getMessage());
+            })
+        .block();
   }
 }
