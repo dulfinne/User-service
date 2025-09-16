@@ -17,7 +17,7 @@ import static io.restassured.RestAssured.given;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EmbeddedKafka
+@EmbeddedKafka(ports = 29092)
 public abstract class IntegrationTestBase {
 
   @LocalServerPort private int port;
