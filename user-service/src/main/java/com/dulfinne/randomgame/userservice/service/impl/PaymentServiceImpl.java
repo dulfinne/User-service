@@ -7,8 +7,10 @@ import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import com.dulfinne.randomgame.userservice.repository.GamePaymentRepository;
 import com.dulfinne.randomgame.userservice.service.PaymentService;
 import com.dulfinne.randomgame.userservice.service.UserService;
+import com.dulfinne.randomgame.userservice.util.CommonConstants;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -21,6 +23,7 @@ public class PaymentServiceImpl implements PaymentService {
 
   @Override
   @Transactional
+  @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#payment.username()")
   public Mono<Void> processPayment(Payment payment) {
     return checkGamePaymentUniqueness(payment.gameId())
         .then(Mono.just(new MoneyRequest(payment.amount())))

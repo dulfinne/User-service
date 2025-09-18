@@ -1,6 +1,6 @@
 package com.dulfinne.randomgame.userservice.integration;
 
-import com.dulfinne.randomgame.userservice.util.HeaderConstants;
+import com.dulfinne.randomgame.userservice.util.CommonConstants;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -24,7 +24,7 @@ public abstract class IntegrationTestBase {
 
   protected RequestSpecification withAuth(String username) {
     return given()
-        .header(HeaderConstants.USERNAME_HEADER, username)
+        .header(CommonConstants.USERNAME_HEADER, username)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .port(port);
   }

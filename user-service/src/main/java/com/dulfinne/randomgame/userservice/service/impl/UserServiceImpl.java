@@ -12,8 +12,11 @@ import com.dulfinne.randomgame.userservice.exception.EntityNotFoundException;
 import com.dulfinne.randomgame.userservice.mapper.UserMapper;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
 import com.dulfinne.randomgame.userservice.service.UserService;
+import com.dulfinne.randomgame.userservice.util.CommonConstants;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +72,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
+  @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
   public Mono<Void> deleteUser(String username) {
     return getUserIfExists(username).flatMap(userRepository::delete);
   }
@@ -76,6 +80,7 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   @LogDifferences
+  @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
   public Mono<UserResponse> creditMoney(String username, MoneyRequest request) {
     return getUserIfExists(username)
         .doOnNext(
@@ -93,6 +98,7 @@ public class UserServiceImpl implements UserService {
   @Override
   @Transactional
   @LogDifferences
+  @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
   public Mono<UserResponse> debitMoney(String username, MoneyRequest request) {
     return getUserIfExists(username)
         .doOnNext(
@@ -111,6 +117,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
   public Mono<MoneyResponse> getBalance(String username) {
     return getUserIfExists(username).map(user -> new MoneyResponse(user.getBalance()));
   }
