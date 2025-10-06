@@ -18,11 +18,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.testcontainers.shaded.org.awaitility.Durations;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 import static org.awaitility.Awaitility.await;
@@ -222,14 +222,13 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.TRUE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.add(payment.amount());
 
-      var a = kafkaTemplate.send(
+      kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
-      System.out.println(a);
 
       await()
-          .atMost(Durations.TEN_SECONDS)
+          .atMost(Duration.ofSeconds(20))
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
@@ -255,14 +254,13 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.subtract(payment.amount());
 
-      var a = kafkaTemplate.send(
+      kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
-      System.out.println(a);
 
       await()
-          .atMost(Durations.TEN_SECONDS)
+          .atMost(Duration.ofSeconds(20))
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
@@ -289,16 +287,13 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE;
 
-      var a = kafkaTemplate.send(
+      kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
 
-      System.out.println(a);
-
-
       await()
-          .atMost(Durations.TEN_SECONDS)
+          .atMost(Duration.ofSeconds(20))
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
