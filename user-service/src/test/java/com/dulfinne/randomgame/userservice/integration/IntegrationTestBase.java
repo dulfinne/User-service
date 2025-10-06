@@ -22,7 +22,8 @@ import static io.restassured.RestAssured.given;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class IntegrationTestBase {
 
-  @LocalServerPort private int port;
+  @LocalServerPort
+  private int port;
 
   protected RequestSpecification withAuth(String username) {
     return given()
@@ -33,7 +34,7 @@ public abstract class IntegrationTestBase {
 
   @Container
   public static final MongoDBContainer container =
-      new MongoDBContainer(DockerImageName.parse("mongo:8.0.4"));
+      new MongoDBContainer(DockerImageName.parse("mongo:8.0.4")).withExposedPorts(27017);
 
   @DynamicPropertySource
   static void mongoProperties(DynamicPropertyRegistry registry) {
