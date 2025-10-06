@@ -19,7 +19,7 @@ import static io.restassured.RestAssured.given;
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka(ports = 29092)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public abstract class IntegrationTestBase {
 
   @LocalServerPort
@@ -38,6 +38,6 @@ public abstract class IntegrationTestBase {
 
   @DynamicPropertySource
   static void mongoProperties(DynamicPropertyRegistry registry) {
-    registry.add("spring.data.mongodb.uri", container::getConnectionString);
+    registry.add("MONGO_URL", container::getConnectionString);
   }
 }
