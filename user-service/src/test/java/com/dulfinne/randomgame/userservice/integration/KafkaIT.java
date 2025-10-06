@@ -12,18 +12,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.shaded.org.awaitility.Durations;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @RequiredArgsConstructor
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class KafkaIT extends IntegrationTestBase {
 
   private final KafkaTemplate<Object, Object> kafkaTemplate;
@@ -43,14 +42,16 @@ public class KafkaIT extends IntegrationTestBase {
   @Nested
   class ReceivePayment {
     @Test
-    void givenPaymentMessage_whenFlagIsPositive_thenUserBalanceIncremented() {
+    void givenPaymentMessage_whenFlagIsPositive_thenUserBalanceIncremented() throws ExecutionException, InterruptedException {
       userRepository.save(UserTestData.getFirstUser().build()).block();
 
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.TRUE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.add(payment.amount());
 
       kafkaTemplate.send(
-          kafkaProperties.topics().gamePayments(), UserTestData.FIRST_USERNAME, payment);
+                       kafkaProperties.topics()
+                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
+                   .get();
 
       await()
           .atMost(Durations.FIVE_SECONDS)
@@ -73,14 +74,16 @@ public class KafkaIT extends IntegrationTestBase {
     }
 
     @Test
-    void givenPaymentMessage_whenFlagIsNegative_thenUserBalanceDecremented() {
+    void givenPaymentMessage_whenFlagIsNegative_thenUserBalanceDecremented() throws ExecutionException, InterruptedException {
       userRepository.save(UserTestData.getFirstUser().build()).block();
 
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.subtract(payment.amount());
 
       kafkaTemplate.send(
-          kafkaProperties.topics().gamePayments(), UserTestData.FIRST_USERNAME, payment);
+                       kafkaProperties.topics()
+                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
+                   .get();
 
       await()
           .atMost(Durations.FIVE_SECONDS)
@@ -103,7 +106,7 @@ public class KafkaIT extends IntegrationTestBase {
     }
 
     @Test
-    void givenDuplicatePayment_whenConsumed_thenBalanceIsNotModified() {
+    void givenDuplicatePayment_whenConsumed_thenBalanceIsNotModified() throws ExecutionException, InterruptedException {
       paymentRepository.save(new GamePayment(UserTestData.FIRST_ID)).block();
       userRepository.save(UserTestData.getFirstUser().build()).block();
 
@@ -111,7 +114,9 @@ public class KafkaIT extends IntegrationTestBase {
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE;
 
       kafkaTemplate.send(
-          kafkaProperties.topics().gamePayments(), UserTestData.FIRST_USERNAME, payment);
+                       kafkaProperties.topics()
+                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
+                   .get();
 
       await()
           .atMost(Durations.FIVE_SECONDS)
