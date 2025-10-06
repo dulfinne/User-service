@@ -26,6 +26,7 @@ public class UserServiceIT extends IntegrationTestBase {
 
   @BeforeEach
   void setUp() {
+    System.out.println(container.getConnectionString());
     userRepository.deleteAll().block();
   }
 
