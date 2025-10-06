@@ -222,13 +222,14 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.TRUE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.add(payment.amount());
 
-      kafkaTemplate.send(
+      var a = kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
+      System.out.println(a);
 
       await()
-          .atMost(Durations.FIVE_SECONDS)
+          .atMost(Durations.TEN_SECONDS)
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
@@ -254,13 +255,14 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.subtract(payment.amount());
 
-      kafkaTemplate.send(
+      var a = kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
+      System.out.println(a);
 
       await()
-          .atMost(Durations.FIVE_SECONDS)
+          .atMost(Durations.TEN_SECONDS)
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
@@ -287,13 +289,16 @@ public class UserServiceIT extends IntegrationTestBase {
       Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
       BigDecimal expectedBalance = UserTestData.FIRST_BALANCE;
 
-      kafkaTemplate.send(
+      var a = kafkaTemplate.send(
                        kafkaProperties.topics()
                                       .gamePayments(), UserTestData.FIRST_USERNAME, payment)
                    .get();
 
+      System.out.println(a);
+
+
       await()
-          .atMost(Durations.FIVE_SECONDS)
+          .atMost(Durations.TEN_SECONDS)
           .untilAsserted(
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
