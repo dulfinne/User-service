@@ -34,7 +34,7 @@ public abstract class IntegrationTestBase {
 
   @Container
   public static final MongoDBContainer container =
-      new MongoDBContainer(DockerImageName.parse("mongo:8.0.4"));
+      new MongoDBContainer(DockerImageName.parse("mongo:8.0.4")).withExposedPorts(27017);
 
   @DynamicPropertySource
   static void mongoProperties(DynamicPropertyRegistry registry) {
