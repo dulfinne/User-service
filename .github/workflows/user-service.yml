@@ -50,6 +50,11 @@ jobs:
           name: user-service-jar
           path: ./user-service/build/libs/*.jar
 
+      - name: Fail if tests failed
+        if: steps.tests.outcome != 'success'
+        run: exit 1
+
+
   docker:
     runs-on: ubuntu-latest
     needs: build
