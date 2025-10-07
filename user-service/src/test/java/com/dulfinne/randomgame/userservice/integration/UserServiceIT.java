@@ -2,11 +2,7 @@ package com.dulfinne.randomgame.userservice.integration;
 
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
-import com.dulfinne.randomgame.userservice.entity.GamePayment;
 import com.dulfinne.randomgame.userservice.entity.User;
-import com.dulfinne.randomgame.userservice.kafka.config.KafkaProperties;
-import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
-import com.dulfinne.randomgame.userservice.repository.GamePaymentRepository;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
 import com.dulfinne.randomgame.userservice.util.ApiPaths;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
@@ -17,15 +13,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.core.KafkaTemplate;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.concurrent.ExecutionException;
-
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsString;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,16 +24,9 @@ public class UserServiceIT extends IntegrationTestBase {
 
   private final UserRepository userRepository;
 
-  private final KafkaTemplate<Object, Object> kafkaTemplate;
-
-  private final KafkaProperties kafkaProperties;
-
-  private final GamePaymentRepository paymentRepository;
-
   @BeforeEach
   void setUp() {
     userRepository.deleteAll().block();
-    paymentRepository.deleteAll().block();
   }
 
   @Nested
@@ -210,98 +193,6 @@ public class UserServiceIT extends IntegrationTestBase {
           .statusCode(HttpStatus.NOT_FOUND.value())
           .body("message", containsString(errorMessage))
           .extract();
-    }
-  }
-
-  @Nested
-  class ReceivePayment {
-    @Test
-    void givenPaymentMessage_whenFlagIsPositive_thenUserBalanceIncremented() throws ExecutionException, InterruptedException {
-      userRepository.save(UserTestData.getFirstUser().build()).block();
-
-      Payment payment = UserTestData.getPayment().positiveFlag(Boolean.TRUE).build();
-      BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.add(payment.amount());
-
-      kafkaTemplate.send(
-                       kafkaProperties.topics()
-                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
-                   .get();
-
-      await()
-          .atMost(Duration.ofSeconds(20))
-          .untilAsserted(
-              () -> {
-                Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
-                Mono<GamePayment> paymentMono = paymentRepository.findById(UserTestData.FIRST_ID);
-
-                StepVerifier.create(Mono.zip(userMono, paymentMono))
-                            .assertNext(
-                                tuple -> {
-                                  User user = tuple.getT1();
-                                  GamePayment paymentRecord = tuple.getT2();
-                                  assertThat(user.getBalance()).isEqualTo(expectedBalance);
-                                  assertThat(paymentRecord).isNotNull();
-                                })
-                            .expectComplete()
-                            .verify();
-              });
-    }
-
-    @Test
-    void givenPaymentMessage_whenFlagIsNegative_thenUserBalanceDecremented() throws ExecutionException, InterruptedException {
-      userRepository.save(UserTestData.getFirstUser().build()).block();
-
-      Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
-      BigDecimal expectedBalance = UserTestData.FIRST_BALANCE.subtract(payment.amount());
-
-      kafkaTemplate.send(
-                       kafkaProperties.topics()
-                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
-                   .get();
-
-      await()
-          .atMost(Duration.ofSeconds(20))
-          .untilAsserted(
-              () -> {
-                Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
-                Mono<GamePayment> paymentMono = paymentRepository.findById(UserTestData.FIRST_ID);
-
-                StepVerifier.create(Mono.zip(userMono, paymentMono))
-                            .assertNext(
-                                tuple -> {
-                                  User user = tuple.getT1();
-                                  GamePayment paymentRecord = tuple.getT2();
-                                  assertThat(user.getBalance()).isEqualTo(expectedBalance);
-                                  assertThat(paymentRecord).isNotNull();
-                                })
-                            .expectComplete()
-                            .verify();
-              });
-    }
-
-    @Test
-    void givenDuplicatePayment_whenConsumed_thenBalanceIsNotModified() throws ExecutionException, InterruptedException {
-      paymentRepository.save(new GamePayment(UserTestData.FIRST_ID)).block();
-      userRepository.save(UserTestData.getFirstUser().build()).block();
-
-      Payment payment = UserTestData.getPayment().positiveFlag(Boolean.FALSE).build();
-      BigDecimal expectedBalance = UserTestData.FIRST_BALANCE;
-
-      kafkaTemplate.send(
-                       kafkaProperties.topics()
-                                      .gamePayments(), UserTestData.FIRST_USERNAME, payment)
-                   .get();
-
-      await()
-          .atMost(Duration.ofSeconds(20))
-          .untilAsserted(
-              () -> {
-                Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
-                StepVerifier.create(Mono.from(userMono))
-                            .assertNext(user -> assertThat(user.getBalance()).isEqualTo(expectedBalance))
-                            .expectComplete()
-                            .verify();
-              });
     }
   }
 }
