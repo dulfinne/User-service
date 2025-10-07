@@ -20,8 +20,7 @@ import static io.restassured.RestAssured.given;
 @EmbeddedKafka(ports = 29092)
 public abstract class IntegrationTestBase {
 
-  @LocalServerPort
-  private int port;
+  @LocalServerPort  private int port;
 
   protected RequestSpecification withAuth(String username) {
     return given()
