@@ -22,8 +22,7 @@ import static io.restassured.RestAssured.given;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class IntegrationTestBase {
 
-  @LocalServerPort
-  private int port;
+  @LocalServerPort  private int port;
 
   protected RequestSpecification withAuth(String username) {
     return given()
