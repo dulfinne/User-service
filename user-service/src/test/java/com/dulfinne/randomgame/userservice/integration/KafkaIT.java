@@ -61,15 +61,15 @@ public class KafkaIT extends IntegrationTestBase {
                 Mono<GamePayment> paymentMono = paymentRepository.findById(UserTestData.FIRST_ID);
 
                 StepVerifier.create(Mono.zip(userMono, paymentMono))
-                            .assertNext(
-                                tuple -> {
-                                  User user = tuple.getT1();
-                                  GamePayment paymentRecord = tuple.getT2();
-                                  assertThat(user.getBalance()).isEqualTo(expectedBalance);
-                                  assertThat(paymentRecord).isNotNull();
-                                })
-                            .expectComplete()
-                            .verify();
+                    .assertNext(
+                        tuple -> {
+                          User user = tuple.getT1();
+                          GamePayment paymentRecord = tuple.getT2();
+                          assertThat(user.getBalance()).isEqualTo(expectedBalance);
+                          assertThat(paymentRecord).isNotNull();
+                        })
+                    .expectComplete()
+                    .verify();
               });
     }
 
@@ -93,15 +93,15 @@ public class KafkaIT extends IntegrationTestBase {
                 Mono<GamePayment> paymentMono = paymentRepository.findById(UserTestData.FIRST_ID);
 
                 StepVerifier.create(Mono.zip(userMono, paymentMono))
-                            .assertNext(
-                                tuple -> {
-                                  User user = tuple.getT1();
-                                  GamePayment paymentRecord = tuple.getT2();
-                                  assertThat(user.getBalance()).isEqualTo(expectedBalance);
-                                  assertThat(paymentRecord).isNotNull();
-                                })
-                            .expectComplete()
-                            .verify();
+                    .assertNext(
+                        tuple -> {
+                          User user = tuple.getT1();
+                          GamePayment paymentRecord = tuple.getT2();
+                          assertThat(user.getBalance()).isEqualTo(expectedBalance);
+                          assertThat(paymentRecord).isNotNull();
+                        })
+                    .expectComplete()
+                    .verify();
               });
     }
 
@@ -124,9 +124,9 @@ public class KafkaIT extends IntegrationTestBase {
               () -> {
                 Mono<User> userMono = userRepository.findByUsername(UserTestData.FIRST_USERNAME);
                 StepVerifier.create(Mono.from(userMono))
-                            .assertNext(user -> assertThat(user.getBalance()).isEqualTo(expectedBalance))
-                            .expectComplete()
-                            .verify();
+                    .assertNext(user -> assertThat(user.getBalance()).isEqualTo(expectedBalance))
+                    .expectComplete()
+                    .verify();
               });
     }
   }
