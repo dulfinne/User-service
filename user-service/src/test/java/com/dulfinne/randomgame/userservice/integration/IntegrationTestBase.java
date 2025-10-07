@@ -1,6 +1,7 @@
 package com.dulfinne.randomgame.userservice.integration;
 
 import com.dulfinne.randomgame.userservice.util.CommonConstants;
+import com.redis.testcontainers.RedisContainer;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -39,10 +40,15 @@ public abstract class IntegrationTestBase {
   public static final KafkaContainer kafkaContainer =
       new KafkaContainer(DockerImageName.parse("apache/kafka:3.9.1"));
 
+  @Container
+  public static final RedisContainer redisContainer =
+      new RedisContainer(DockerImageName.parse("redis:7.2.0"));
 
   @DynamicPropertySource
   static void mongoProperties(DynamicPropertyRegistry registry) {
     registry.add("MONGO_URL", mongoContainer::getConnectionString);
     registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+    registry.add("spring.data.redis.host", redisContainer::getHost);
+    registry.add("spring.data.redis.port", redisContainer::getRedisPort);
   }
 }
