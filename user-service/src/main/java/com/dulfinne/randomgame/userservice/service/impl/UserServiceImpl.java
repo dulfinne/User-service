@@ -5,10 +5,13 @@ import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
+import com.dulfinne.randomgame.userservice.entity.TransactionType;
 import com.dulfinne.randomgame.userservice.entity.User;
 import com.dulfinne.randomgame.userservice.exception.ActionNotAllowedException;
 import com.dulfinne.randomgame.userservice.exception.EntityAlreadyExistsException;
 import com.dulfinne.randomgame.userservice.exception.EntityNotFoundException;
+import com.dulfinne.randomgame.userservice.grpc.GrpcClientService;
+import com.dulfinne.randomgame.userservice.grpc.TransactionProto;
 import com.dulfinne.randomgame.userservice.mapper.UserMapper;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
 import com.dulfinne.randomgame.userservice.service.UserService;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,6 +34,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+  private final GrpcClientService grpcClientService;
 
   @Override
   @Transactional(readOnly = true)
@@ -81,17 +86,20 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @LogDifferences
   @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
-  public Mono<UserResponse> creditMoney(String username, MoneyRequest request) {
+  public Mono<UserResponse> creditMoney(
+      String username,
+      MoneyRequest request,
+      TransactionType type
+  ) {
     return getUserIfExists(username)
-        .doOnNext(
-            user -> {
-              BigDecimal requestedAmount = request.amount();
-              BigDecimal currentBalance = user.getBalance();
-              BigDecimal newBalance = currentBalance.add(requestedAmount);
-
-              user.setBalance(newBalance);
-            })
-        .flatMap(userRepository::save)
+        .map(user -> {
+          BigDecimal requestedAmount = request.amount();
+          BigDecimal newBalance = user.getBalance()
+                                      .add(requestedAmount);
+          user.setBalance(newBalance);
+          return user;
+        })
+        .flatMap(user -> processTransaction(user, request.amount(), type))
         .map(userMapper::toResponse);
   }
 
@@ -99,7 +107,11 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @LogDifferences
   @CacheEvict(value = CommonConstants.CACHE_USER_BALANCE, key = "#username")
-  public Mono<UserResponse> debitMoney(String username, MoneyRequest request) {
+  public Mono<UserResponse> debitMoney(
+      String username,
+      MoneyRequest request,
+      TransactionType type
+  ) {
     return getUserIfExists(username)
         .doOnNext(
             user -> {
@@ -111,7 +123,10 @@ public class UserServiceImpl implements UserService {
               BigDecimal newBalance = currentBalance.subtract(request.amount());
               user.setBalance(newBalance);
             })
-        .flatMap(userRepository::save)
+        .flatMap(user -> processTransaction(user,
+                                            request.amount()
+                                                   .negate(),
+                                            type))
         .map(userMapper::toResponse);
   }
 
@@ -148,5 +163,18 @@ public class UserServiceImpl implements UserService {
       throw new ActionNotAllowedException(
           String.format(ExceptionKeys.DEBIT_NOT_ENOUGH_MONEY, currentBalance));
     }
+  }
+
+  private Mono<User> processTransaction(User user, BigDecimal amount, TransactionType type) {
+    String username = user.getUsername();
+    return Mono.fromCallable(() -> grpcClientService.saveTransaction(
+                   TransactionProto.Transaction.newBuilder()
+                                               .setUsername(username)
+                                               .setAmount(amount.toString())
+                                               .setType(type.toString())
+                                               .build()
+               ))
+               .subscribeOn(Schedulers.boundedElastic())
+               .flatMap(ignored -> userRepository.save(user));
   }
 }
