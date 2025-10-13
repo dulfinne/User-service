@@ -42,9 +42,8 @@ dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-config")
   implementation("org.springframework.kafka:spring-kafka")
   implementation("org.springframework.boot:spring-boot-starter-data-redis")
-  implementation("io.grpc:grpc-protobuf:$grpcVersion")
-  implementation("io.grpc:grpc-stub:$grpcVersion")
   implementation("net.devh:grpc-client-spring-boot-starter:$grpcClientVersion")
+  implementation("org.springframework.cloud:spring-cloud-stream-binder-kafka")
 
   compileOnly("org.projectlombok:lombok:$lombokVersion")
   runtimeOnly("io.grpc:grpc-netty-shaded:$grpcVersion")

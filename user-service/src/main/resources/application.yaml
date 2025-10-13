@@ -5,6 +5,17 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
+  cloud:
+    stream:
+      output-bindings: transaction-topic
+      binders:
+        kafka:
+          environment:
+            spring:
+              kafka:
+                bootstrap-servers: localhost:29092
+      default-binder: kafka
+
 grpc:
   client:
     transactionService:

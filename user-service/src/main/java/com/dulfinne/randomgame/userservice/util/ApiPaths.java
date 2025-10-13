@@ -5,10 +5,12 @@ public final class ApiPaths {
 
   public static final String USER_BASE_URL = "/api/v1/users";
   public static final String PARALLEL_BASE_URL = "/api/v1/parallel";
+  public static final String STRATEGY_BASE_URL = "/api/v1/strategies";
 
   public static final String ME = "/me";
   public static final String DEBIT = "/debit";
   public static final String CREDIT = "/credit";
   public static final String BALANCE_BY_USERNAME = "/{username}/balance";
   public static final String BLOCKING = "/blocking";
+  public static final String SWITCH_TRANSACTION = "/transactions/next";
 }
