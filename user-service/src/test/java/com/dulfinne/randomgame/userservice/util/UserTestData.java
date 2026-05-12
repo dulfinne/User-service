@@ -3,6 +3,7 @@ package com.dulfinne.randomgame.userservice.util;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
 import com.dulfinne.randomgame.userservice.entity.User;
+import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -51,5 +52,12 @@ public class UserTestData {
         .name(FIRST_NAME)
         .surname(FIRST_SURNAME)
         .balance(FIRST_BALANCE);
+  }
+
+  public static Payment.PaymentBuilder getPayment() {
+    return Payment.builder()
+        .gameId(UserTestData.FIRST_ID)
+        .username(UserTestData.FIRST_USERNAME)
+        .amount(BigDecimal.TEN);
   }
 }

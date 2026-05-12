@@ -1,0 +1,23 @@
+{
+  "name": "mongo-payment-outbox-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+    "tasks.max": "1",
+    "mongodb.connection.string": "mongodb://mongo1:27027?replicaSet=rs0",
+    "mongodb.members.auto.discover": "true",
+    "mongodb.name": "game_db",
+    "mongodb.user": "debezium",
+    "mongodb.password": "debezium",
+    "mongodb.authsource": "admin",
+    "collection.include.list": "game_db.outbox_event",
+    "topic.prefix": "game_db",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false",
+    "transforms": "outbox",
+    "transforms.outbox.type": "io.debezium.connector.mongodb.transforms.outbox.MongoEventRouter",
+    "exactly.once.support": "required"
+  }
+}
