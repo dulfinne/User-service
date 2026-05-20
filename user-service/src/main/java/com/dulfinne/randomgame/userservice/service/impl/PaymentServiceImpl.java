@@ -2,6 +2,7 @@ package com.dulfinne.randomgame.userservice.service.impl;
 
 import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.entity.GamePayment;
+import com.dulfinne.randomgame.userservice.entity.TransactionType;
 import com.dulfinne.randomgame.userservice.exception.EntityAlreadyExistsException;
 import com.dulfinne.randomgame.userservice.kafka.entity.Payment;
 import com.dulfinne.randomgame.userservice.repository.GamePaymentRepository;
@@ -30,8 +31,8 @@ public class PaymentServiceImpl implements PaymentService {
         .flatMap(
             money ->
                 Boolean.TRUE.equals(payment.positiveFlag())
-                    ? userService.creditMoney(payment.username(), money)
-                    : userService.debitMoney(payment.username(), money))
+                    ? userService.creditMoney(payment.username(), money, TransactionType.IN_GAME)
+                    : userService.debitMoney(payment.username(), money, TransactionType.IN_GAME))
         .flatMap(ignored -> gamePaymentRepository.save(new GamePayment(payment.gameId())))
         .then();
   }

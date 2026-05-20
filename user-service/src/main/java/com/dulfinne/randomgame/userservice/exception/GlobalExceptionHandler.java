@@ -18,7 +18,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(WebExchangeBindException.class)
   public Mono<Map<String, String>> handleValidationExceptions(WebExchangeBindException ex) {
     Map<String, String> errors = new HashMap<>();
-    for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+    for (FieldError fieldError : ex.getBindingResult()
+                                   .getFieldErrors()) {
       String fieldName = fieldError.getField();
       String errorMessage = fieldError.getDefaultMessage();
       errors.put(fieldName, errorMessage);
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
   }
 
   @ResponseStatus(HttpStatus.CONFLICT)
-  @ExceptionHandler({EntityAlreadyExistsException.class, ActionNotAllowedException.class})
+  @ExceptionHandler({EntityAlreadyExistsException.class, ActionNotAllowedException.class, TransactionFailedException.class})
   public Mono<ErrorResponse> handleConflictException(RuntimeException e) {
     return Mono.just(new ErrorResponse(HttpStatus.CONFLICT, e.getMessage()));
   }

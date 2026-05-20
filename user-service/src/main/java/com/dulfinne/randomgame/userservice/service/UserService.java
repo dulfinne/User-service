@@ -4,6 +4,7 @@ import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
+import com.dulfinne.randomgame.userservice.entity.TransactionType;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -19,9 +20,9 @@ public interface UserService {
 
   Mono<Void> deleteUser(String username);
 
-  Mono<UserResponse> creditMoney(String username, MoneyRequest request);
+  Mono<UserResponse> creditMoney(String username, MoneyRequest request, TransactionType type);
 
-  Mono<UserResponse> debitMoney(String username, MoneyRequest request);
+  Mono<UserResponse> debitMoney(String username, MoneyRequest request, TransactionType type);
 
   Mono<MoneyResponse> getBalance(String username);
 }

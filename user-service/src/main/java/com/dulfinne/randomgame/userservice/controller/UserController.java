@@ -4,6 +4,7 @@ import com.dulfinne.randomgame.userservice.dto.request.MoneyRequest;
 import com.dulfinne.randomgame.userservice.dto.request.UserRequest;
 import com.dulfinne.randomgame.userservice.dto.response.MoneyResponse;
 import com.dulfinne.randomgame.userservice.dto.response.UserResponse;
+import com.dulfinne.randomgame.userservice.entity.TransactionType;
 import com.dulfinne.randomgame.userservice.service.UserService;
 import com.dulfinne.randomgame.userservice.util.ApiPaths;
 import com.dulfinne.randomgame.userservice.util.CommonConstants;
@@ -35,13 +36,15 @@ public class UserController {
   @GetMapping
   public Mono<List<UserResponse>> getUsers(
       @RequestParam(value = "offset", defaultValue = "0") Integer offset,
-      @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+      @RequestParam(value = "limit", defaultValue = "10") Integer limit
+  ) {
     return userService.getUsers(offset, limit);
   }
 
   @GetMapping(ApiPaths.ME)
   public Mono<UserResponse> getUser(
-      @RequestHeader(CommonConstants.USERNAME_HEADER) String username) {
+      @RequestHeader(CommonConstants.USERNAME_HEADER) String username
+  ) {
     return userService.getUser(username);
   }
 
@@ -49,14 +52,16 @@ public class UserController {
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<UserResponse> createUser(
       @RequestHeader(CommonConstants.USERNAME_HEADER) String username,
-      @RequestBody @Valid UserRequest request) {
+      @RequestBody @Valid UserRequest request
+  ) {
     return userService.createUser(username, request);
   }
 
   @PutMapping
   public Mono<UserResponse> updateUser(
       @RequestHeader(CommonConstants.USERNAME_HEADER) String username,
-      @RequestBody @Valid UserRequest request) {
+      @RequestBody @Valid UserRequest request
+  ) {
     return userService.updateUser(username, request);
   }
 
@@ -69,15 +74,17 @@ public class UserController {
   @PostMapping(ApiPaths.CREDIT)
   public Mono<UserResponse> creditMoney(
       @RequestHeader(CommonConstants.USERNAME_HEADER) String username,
-      @RequestBody @Valid MoneyRequest request) {
-    return userService.creditMoney(username, request);
+      @RequestBody @Valid MoneyRequest request
+  ) {
+    return userService.creditMoney(username, request, TransactionType.INCOME);
   }
 
   @PostMapping(ApiPaths.DEBIT)
   public Mono<UserResponse> debitMoney(
       @RequestHeader(CommonConstants.USERNAME_HEADER) String username,
-      @RequestBody @Valid MoneyRequest request) {
-    return userService.debitMoney(username, request);
+      @RequestBody @Valid MoneyRequest request
+  ) {
+    return userService.debitMoney(username, request, TransactionType.OUTCOME);
   }
 
   @GetMapping(ApiPaths.BALANCE_BY_USERNAME)
