@@ -7,3 +7,17 @@ spring:
       uri: ${MONGO_URL:mongodb://localhost:27017}
       auto-index-creation: true
       database: test_user_db
+
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumers-number: 3
+    groups:
+      game-payments: game-payments-group
+    topics:
+      game-payments: game-payments-topic
+    error-handler:
+      min-interval: 0
+      max-interval: 0
+      multiplier: 1.0
+      max-attempts: 0
+    dlt-postfix: .DLT

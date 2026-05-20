@@ -4,8 +4,11 @@ public final class ApiPaths {
   private ApiPaths() {}
 
   public static final String USER_BASE_URL = "/api/v1/users";
+  public static final String PARALLEL_BASE_URL = "/api/v1/parallel";
+
   public static final String ME = "/me";
   public static final String DEBIT = "/debit";
   public static final String CREDIT = "/credit";
   public static final String BALANCE_BY_USERNAME = "/{username}/balance";
+  public static final String BLOCKING = "/blocking";
 }
