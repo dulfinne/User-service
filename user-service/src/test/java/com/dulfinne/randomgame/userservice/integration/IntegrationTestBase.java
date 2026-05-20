@@ -32,9 +32,9 @@ public abstract class IntegrationTestBase {
         .port(port);
   }
 
-  @Container
-  public static final MongoDBContainer mongoContainer =
-      new MongoDBContainer(DockerImageName.parse("mongo:8.0.4"));
+    @Container
+    public static final MongoDBContainer mongoContainer =
+            new MongoDBContainer(DockerImageName.parse("mongo:8.0.4"));
 
   @Container
   public static final KafkaContainer kafkaContainer =
