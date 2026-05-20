@@ -1,6 +1,7 @@
 package com.dulfinne.randomgame.userservice.integration;
 
-import com.dulfinne.randomgame.userservice.util.HeaderConstants;
+import com.dulfinne.randomgame.userservice.util.CommonConstants;
+import com.redis.testcontainers.RedisContainer;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -21,11 +22,12 @@ import static io.restassured.RestAssured.given;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class IntegrationTestBase {
 
-  @LocalServerPort private int port;
+  @LocalServerPort
+  private int port;
 
   protected RequestSpecification withAuth(String username) {
     return given()
-        .header(HeaderConstants.USERNAME_HEADER, username)
+        .header(CommonConstants.USERNAME_HEADER, username)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .port(port);
   }
@@ -34,13 +36,19 @@ public abstract class IntegrationTestBase {
     public static final MongoDBContainer mongoContainer =
             new MongoDBContainer(DockerImageName.parse("mongo:8.0.4"));
 
-    @Container
-    public static final KafkaContainer kafkaContainer =
-            new KafkaContainer(DockerImageName.parse("apache/kafka:3.9.1"));
+  @Container
+  public static final KafkaContainer kafkaContainer =
+      new KafkaContainer(DockerImageName.parse("apache/kafka:3.9.1"));
 
-    @DynamicPropertySource
-    static void mongoProperties(DynamicPropertyRegistry registry) {
-        registry.add("MONGO_URL", mongoContainer::getConnectionString);
-        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
-    }
+  @Container
+  public static final RedisContainer redisContainer =
+      new RedisContainer(DockerImageName.parse("redis:7.2.0"));
+
+  @DynamicPropertySource
+  static void mongoProperties(DynamicPropertyRegistry registry) {
+    registry.add("MONGO_URL", mongoContainer::getConnectionString);
+    registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+    registry.add("spring.data.redis.host", redisContainer::getHost);
+    registry.add("spring.data.redis.port", redisContainer::getRedisPort);
+  }
 }
