@@ -10,10 +10,10 @@ import com.dulfinne.randomgame.userservice.entity.User;
 import com.dulfinne.randomgame.userservice.exception.ActionNotAllowedException;
 import com.dulfinne.randomgame.userservice.exception.EntityAlreadyExistsException;
 import com.dulfinne.randomgame.userservice.exception.EntityNotFoundException;
-import com.dulfinne.randomgame.userservice.grpc.GrpcClientService;
-import com.dulfinne.randomgame.userservice.grpc.TransactionProto;
+import com.dulfinne.randomgame.userservice.kafka.entity.TransactionMessage;
 import com.dulfinne.randomgame.userservice.mapper.UserMapper;
 import com.dulfinne.randomgame.userservice.repository.UserRepository;
+import com.dulfinne.randomgame.userservice.service.TransactionProcessService;
 import com.dulfinne.randomgame.userservice.service.UserService;
 import com.dulfinne.randomgame.userservice.util.CommonConstants;
 import com.dulfinne.randomgame.userservice.util.ExceptionKeys;
@@ -34,7 +34,7 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
   private final UserMapper userMapper;
-  private final GrpcClientService grpcClientService;
+  private final TransactionProcessService transactionProcessService;
 
   @Override
   @Transactional(readOnly = true)
@@ -91,15 +91,15 @@ public class UserServiceImpl implements UserService {
       MoneyRequest request,
       TransactionType type
   ) {
+    BigDecimal requestedAmount = request.amount();
     return getUserIfExists(username)
         .map(user -> {
-          BigDecimal requestedAmount = request.amount();
           BigDecimal newBalance = user.getBalance()
                                       .add(requestedAmount);
           user.setBalance(newBalance);
           return user;
         })
-        .flatMap(user -> processTransaction(user, request.amount(), type))
+        .flatMap(user -> processTransaction(user, requestedAmount, type))
         .map(userMapper::toResponse);
   }
 
@@ -112,20 +112,20 @@ public class UserServiceImpl implements UserService {
       MoneyRequest request,
       TransactionType type
   ) {
+    BigDecimal requestedAmount = request.amount();
     return getUserIfExists(username)
         .doOnNext(
             user -> {
-              BigDecimal requestedAmount = request.amount();
               BigDecimal currentBalance = user.getBalance();
 
               checkCanDebit(currentBalance, requestedAmount);
 
-              BigDecimal newBalance = currentBalance.subtract(request.amount());
+              BigDecimal newBalance = currentBalance.subtract(requestedAmount);
               user.setBalance(newBalance);
             })
         .flatMap(user -> processTransaction(user,
-                                            request.amount()
-                                                   .negate(),
+                                            requestedAmount
+                                                .negate(),
                                             type))
         .map(userMapper::toResponse);
   }
@@ -167,14 +167,10 @@ public class UserServiceImpl implements UserService {
 
   private Mono<User> processTransaction(User user, BigDecimal amount, TransactionType type) {
     String username = user.getUsername();
-    return Mono.fromCallable(() -> grpcClientService.saveTransaction(
-                   TransactionProto.Transaction.newBuilder()
-                                               .setUsername(username)
-                                               .setAmount(amount.toString())
-                                               .setType(type.toString())
-                                               .build()
-               ))
+    return Mono.fromRunnable(
+                   () -> transactionProcessService.process(new TransactionMessage(username, amount, type))
+               )
                .subscribeOn(Schedulers.boundedElastic())
-               .flatMap(ignored -> userRepository.save(user));
+               .then(userRepository.save(user));
   }
 }

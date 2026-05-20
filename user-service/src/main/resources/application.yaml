@@ -4,9 +4,3 @@ spring:
 
   config:
     import: optional:configserver:http://localhost:8888
-
-grpc:
-  client:
-    transactionService:
-      address: static://localhost:9090
-      negotiationType: plaintext

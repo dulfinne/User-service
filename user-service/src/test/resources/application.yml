@@ -24,3 +24,20 @@ spring:
       multiplier: 1.0
       max-attempts: 0
     dlt-postfix: .DLT
+
+  cloud:
+    stream:
+      output-bindings: transaction-topic
+      binders:
+        kafka:
+          environment:
+            spring:
+              kafka:
+                bootstrap-servers: localhost:29092
+      default-binder: kafka
+
+grpc:
+  client:
+    transactionService:
+      address: static://localhost:9090
+      negotiationType: plaintext
